@@ -1,12 +1,9 @@
 ## Libraries
-using DrWatson
-@quickactivate "Surfaces"
 using Distributed
-
 @everywhere using DrWatson
-
+@everywhere @quickactivate "Surfaces"
 @everywhere begin
-    @quickactivate "Surfaces"
+    using Surfaces
     using JLD2
     using MicrobeAgents
 end
