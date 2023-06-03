@@ -1,16 +1,13 @@
 ## Libraries
-using Distributed
-@everywhere using DrWatson
-@everywhere @quickactivate "Surfaces"
-@everywhere begin
-    using Surfaces
-    using JLD2, DelimitedFiles
-    using MeanSquaredDisplacement
-    using MicrobeAgents: vectorize_adf_measurement, unfold
-end
+using DrWatson
+@quickactivate :Surfaces
+using JLD2, DelimitedFiles
+using MeanSquaredDisplacement
+using MicrobeAgents: vectorize_adf_measurement, unfold
+using Base.Threads
 
 ## Functions to evaluate MSD
-@everywhere function get_emsd(traj::AbstractMatrix{<:NTuple{2}})
+function get_emsd(traj::AbstractMatrix{<:NTuple{2}})
     x = first.(traj)
     y = last.(traj)
     emx = emsd(x)
@@ -18,7 +15,7 @@ end
     [emx emy]
 end
 
-@everywhere function get_emsd(traj::AbstractMatrix{<:NTuple{3}})
+function get_emsd(traj::AbstractMatrix{<:NTuple{3}})
     x = first.(traj)
     y = map(s -> s[2], traj)
     z = last.(traj)
@@ -28,7 +25,7 @@ end
     [emx emy emz]
 end
 
-@everywhere function get_emsd(fname::AbstractString)
+function get_emsd(fname::AbstractString)
     params = parse_savename(fname)[2]
     fout = datadir("proc", savename("emsd", params))
     isfile(fout) && return nothing
@@ -44,4 +41,6 @@ end
 
 ## Analysis
 filenames = readdir(datadir("sims"))
-pmap(get_emsd, filenames)
+@threads for fname in filenames
+    get_emsd(fname)
+end
