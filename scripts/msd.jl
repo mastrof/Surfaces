@@ -52,5 +52,5 @@ end
 end
 
 ## Analysis
-filenames = readdir(datadir("sims"))
+filenames = filter(s -> endswith(s, "jld2"), readdir(datadir("sims")))
 pmap(get_emsd, filenames)
