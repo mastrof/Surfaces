@@ -9,25 +9,25 @@ using Distributed
 end
 
 ## Functions to evaluate MSD
-@everywhere function get_emsd(traj::AbstractMatrix{<:NTuple{2}})
+@everywhere function get_emsd(traj::AbstractMatrix{<:NTuple{2}}, lags)
     x = first.(traj)
     y = last.(traj)
-    emx = emsd(x)
+    emx = emsd(x, lags)
     x = nothing
-    emy = emsd(y)
+    emy = emsd(y, lags)
     y = nothing
     [emx emy]
 end
 
-@everywhere function get_emsd(traj::AbstractMatrix{<:NTuple{3}})
+@everywhere function get_emsd(traj::AbstractMatrix{<:NTuple{3}}, lags)
     x = first.(traj)
     y = map(s -> s[2], traj)
     z = last.(traj)
-    emx = emsd(x)
+    emx = emsd(x, lags)
     x = nothing
-    emy = emsd(y)
+    emy = emsd(y, lags)
     y = nothing
-    emz = emsd(z)
+    emz = emsd(z, lags)
     z = nothing
     [emx emy emz]
 end
@@ -41,10 +41,11 @@ end
     close(simdata)
     traj = unfold(vectorize_adf_measurement(df, :pos), params["L"])
     df = nothing
-    eMSD = get_emsd(traj)
+    lags = 1:10:(size(traj,1)-1)
+    eMSD = get_emsd(traj, lags)
     traj = nothing
     Δt = 0.01
-    t = (axes(eMSD,1).-1) .* Δt
+    t = lags .* Δt
     writedlm(fout, [t eMSD])
     GC.gc()
     return nothing
