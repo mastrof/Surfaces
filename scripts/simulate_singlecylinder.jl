@@ -18,7 +18,7 @@ end
         interaction == :stick ? stick! : slide!
     )
     adata = [:pos, :is_stuck]
-    nsteps = round(Int, 100)
+    nsteps = 50_000
     adf, = run!(model, nsteps; adata)
     @strdict adf
 end
