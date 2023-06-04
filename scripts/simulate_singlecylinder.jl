@@ -8,7 +8,7 @@ using Distributed
 end
 
 ## Routines for data production
-function runsim(params)
+@everywhere function runsim(params)
     @unpack dim, L, R, motilepattern, U, λ, Drot, interaction = params
     model = initializemodel_singlecylinder(
         dim, L, R,
@@ -23,7 +23,7 @@ function runsim(params)
     @strdict adf
 end
 
-function produce_data(config)
+@everywhere function produce_data(config)
     data = produce_or_load(
         runsim, datadir("sims"), config;
         prefix="singlecylinder", suffix="jld2",
