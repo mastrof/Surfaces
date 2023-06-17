@@ -46,6 +46,7 @@ end
 
 
 include("bodies.jl")
+include("slit.jl")
 include("cylinders.jl")
 include("microbe.jl")
 include("model.jl")
