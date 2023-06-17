@@ -45,7 +45,7 @@ end
     lags = 1:1:(size(traj,1)-1)
     eMSD = get_emsd(traj, lags)
     traj = nothing
-    Δt = 0.05
+    Δt = 0.1
     t = lags .* Δt
     writedlm(fout, [t eMSD])
     GC.gc()
