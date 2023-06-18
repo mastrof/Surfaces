@@ -18,8 +18,9 @@ end
         interaction == :stick ? stick! : slide!
     )
     adata = [:pos]
-    when(model,s) = s % 10 == 0
-    nsteps = 1_000_000
+    when(model,s) = s % 5 == 0
+    # nsteps = 1_000_000
+    nsteps = round(Int, 1200/(λ*model.timestep))
     adf, = run!(model, nsteps; adata, when)
     @strdict adf
 end
@@ -43,7 +44,7 @@ R = [0.1, 0.15, 0.2, 0.25]
 motilepattern = [:RunTumble]
 interaction = [:stick, :slide]
 U = [1.0]
-λ = exp10.(range(-1.5, 1, length=20))
+λ = exp10.(range(-1.5, 1, length=20))[2:end]
 Drot = [0.0, 1.0]
 
 allparams = @strdict dim L R motilepattern interaction U λ Drot
