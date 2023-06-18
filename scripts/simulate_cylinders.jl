@@ -17,16 +17,17 @@ end
         U, λ, 1.0, # match with bulk parameters
         interaction == :stick ? stick! : slide!
     )
-    adata = [:pos, :is_stuck]
-    nsteps = 50_000
+    adata = [:pos]
+    nsteps = 1_000_000
     adf, = run!(model, nsteps; adata)
     @strdict adf
 end
 
 @everywhere function produce_data(config)
+    savedir = haskey(ENV, "SCRATCH") ? joinpath(ENV["SCRATCH"], "Surfaces") : datadir()
     data = produce_or_load(
-        runsim, datadir("sims"), config;
-        prefix="singlecylinder", suffix="jld2",
+        runsim, joinpath(savedir, "sims", "slit"), config;
+        prefix="traj", suffix="jld2",
         tag=false, loadfile=false
     )
     data = nothing
@@ -37,11 +38,11 @@ end
 ## Setup parameters and run
 dim = [2, 3]
 L = [1.0]
-R = [0.125, 0.25, 0.375]
+R = [0.1, 0.15, 0.2, 0.25]
 motilepattern = [:RunTumble]
 interaction = [:stick, :slide]
 U = [1.0]
-λ = [0.1, 0.25, 1.0, 2.5, 10.0]
+λ = exp10.(range(-1.5, 1, length=20))
 Drot = [0.0, 1.0]
 
 allparams = @strdict dim L R motilepattern interaction U λ Drot
