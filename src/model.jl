@@ -1,6 +1,6 @@
-export initializemodel_singlecylinder, initializemodel_slit
+export initializemodel_cylinders, initializemodel_slit
 
-function initializemodel_singlecylinder(
+function initializemodel_cylinders(
     dim, L, R,
     MicrobeType, motilepattern,
     U, λ, Drot,

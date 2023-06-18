@@ -10,7 +10,7 @@ end
 ## Routines for data production
 @everywhere function runsim(params)
     @unpack dim, L, R, motilepattern, U, λ, Drot, interaction = params
-    model = initializemodel_singlecylinder(
+    model = initializemodel_cylinders(
         dim, L, R,
         SurfyMicrobe, motilepattern,
         U, λ, Drot,
