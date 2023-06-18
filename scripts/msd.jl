@@ -32,19 +32,21 @@ end
     [emx emy emz]
 end
 
-@everywhere function get_emsd(fname::AbstractString)
+@everywhere function get_emsd(fname::AbstractString, type::AbstractString)
     params = parse_savename(fname)[2]
-    fout = datadir("proc", savename("emsd", params))
+    savedir = haskey(ENV, "SCRATCH") ? joinpath(ENV["SCRATCH"], "Surfaces") : datadir()
+    fout = joinpath(savedir, "proc", type, savename("emsd", params))
     isfile(fout) && return nothing
-    simdata = jldopen(datadir("sims", fname), "r")
+    simdata = jldopen(joinpath(savedir, "sims", type, fname), "r")
     df = simdata["adf"]
     close(simdata)
-    traj = unfold(vectorize_adf_measurement(df, :pos), params["L"])
+    periodicity = type == "cylinders" ? params["L"] : params["L"]+2
+    traj = unfold(vectorize_adf_measurement(df, :pos), periodicity)
     df = nothing
-    lags = 1:10:(size(traj,1)-1)
+    lags = 1:1:(size(traj,1)-1)
     eMSD = get_emsd(traj, lags)
     traj = nothing
-    Δt = 0.01
+    Δt = 0.1
     t = lags .* Δt
     writedlm(fout, [t eMSD])
     GC.gc()
@@ -52,5 +54,10 @@ end
 end
 
 ## Analysis
-filenames = filter(s -> endswith(s, "jld2"), readdir(datadir("sims")))
-pmap(get_emsd, filenames)
+savedir = haskey(ENV, "SCRATCH") ? joinpath(ENV["SCRATCH"], "Surfaces") : datadir()
+trajfiles(type) = filter(
+    s -> startswith(s, "traj") && endswith(s, "jld2"),
+    readdir(joinpath(savedir, "sims", type))
+)
+pmap(fname -> get_emsd(fname, "slit"), trajfiles("slit"))
+pmap(fname -> get_emsd(fname, "cylinders"), trajfiles("cylinders"))
