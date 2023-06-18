@@ -18,8 +18,9 @@ end
         interaction == :stick ? stick! : slide!
     )
     adata = [:pos]
-    when(model,s) = s % 10 == 0
-    nsteps = 1_000_000
+    when(model,s) = s % 5 == 0
+    # nsteps = 1_000_000
+    nsteps = round(Int, 1200/(λ*model.timestep))
     adf, = run!(model, nsteps; adata, when)
     @strdict adf
 end
