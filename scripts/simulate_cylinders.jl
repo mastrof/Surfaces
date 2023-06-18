@@ -18,8 +18,9 @@ end
         interaction == :stick ? stick! : slide!
     )
     adata = [:pos]
+    when(model,s) = s % 10 == 0
     nsteps = 1_000_000
-    adf, = run!(model, nsteps; adata)
+    adf, = run!(model, nsteps; adata, when)
     @strdict adf
 end
 
