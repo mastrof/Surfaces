@@ -40,7 +40,8 @@ end
     simdata = jldopen(joinpath(savedir, "sims", type, fname), "r")
     df = simdata["adf"]
     close(simdata)
-    traj = unfold(vectorize_adf_measurement(df, :pos), params["L"])
+    periodicity = type == "cylinders" ? params["L"] : params["L"]+2
+    traj = unfold(vectorize_adf_measurement(df, :pos), periodicity)
     df = nothing
     lags = 1:1:(size(traj,1)-1)
     eMSD = get_emsd(traj, lags)
