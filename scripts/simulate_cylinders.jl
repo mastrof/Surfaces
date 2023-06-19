@@ -20,7 +20,7 @@ end
     adata = [:pos]
     when(model,s) = s % 5 == 0
     # nsteps = 1_000_000
-    nsteps = round(Int, 1200/(λ*model.timestep))
+    nsteps = round(Int, 800/(λ*model.timestep))
     adf, = run!(model, nsteps; adata, when)
     @strdict adf
 end
