@@ -11,24 +11,29 @@ end
 ## Functions to evaluate MSD
 @everywhere function get_emsd(traj::AbstractMatrix{<:NTuple{2}}, lags)
     x = first.(traj)
-    y = last.(traj)
     emx = emsd(x, lags)
     x = nothing
+    GC.gc()
+    y = last.(traj)
     emy = emsd(y, lags)
     y = nothing
+    GC.gc()
     [emx emy]
 end
 
 @everywhere function get_emsd(traj::AbstractMatrix{<:NTuple{3}}, lags)
     x = first.(traj)
-    y = map(s -> s[2], traj)
-    z = last.(traj)
     emx = emsd(x, lags)
     x = nothing
+    GC.gc()
+    y = map(s -> s[2], traj)
     emy = emsd(y, lags)
     y = nothing
+    GC.gc()
+    z = last.(traj)
     emz = emsd(z, lags)
     z = nothing
+    GC.gc()
     [emx emy emz]
 end
 
@@ -46,10 +51,10 @@ end
     lags = 1:1:(size(traj,1)-1)
     eMSD = get_emsd(traj, lags)
     traj = nothing
+    GC.gc()
     Δt = 0.05
     t = lags .* Δt
     writedlm(fout, [t eMSD])
-    GC.gc()
     return nothing
 end
 
@@ -59,5 +64,7 @@ trajfiles(type) = filter(
     s -> startswith(s, "traj") && endswith(s, "jld2"),
     readdir(joinpath(savedir, "sims", type))
 )
-pmap(fname -> get_emsd(fname, "slit"), trajfiles("slit"))
-pmap(fname -> get_emsd(fname, "cylinders"), trajfiles("cylinders"))
+@everywhere get_emsd(fname) = get_emsd(fname, "slit")
+pmap(get_emsd, trajfiles("slit"))
+@everywhere get_emsd(fname) = get_emsd(fname, "cylinders")
+pmap(get_emsd, trajfiles("cylinders"))
