@@ -28,7 +28,7 @@ end
 @everywhere function produce_data(config)
     savedir = haskey(ENV, "SCRATCH") ? joinpath(ENV["SCRATCH"], "Surfaces") : datadir()
     data = produce_or_load(
-        runsim, joinpath(savedir, "sims", "slit"), config;
+        runsim, joinpath(savedir, "sims", "cylinders"), config;
         prefix="traj", suffix="jld2",
         tag=false, loadfile=false
     )
