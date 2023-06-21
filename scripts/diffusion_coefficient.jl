@@ -62,8 +62,8 @@ for type in ["slit", "cylinders"]
     for fname in filenames
         config = parse_savename(fname)[2]
         data = readdlm(datadir("proc", type, fname))
-        t₀ = 1e2
-        t₁ = 6e3
+        t₀ = 10 / config["λ"]
+        t₁ = 41t₀
         fitpars = config["dim"] == 2 ? diffcoeff2d(data; t₀, t₁) : diffcoeff3d(data; t₀, t₁)
         push!(df, Dict(config..., fitpars...))
     end
