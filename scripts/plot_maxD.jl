@@ -32,7 +32,7 @@ function plot_maxdiffusivity(df)
     for g in gdf
         Dᵣ = g.Drot[1]
         inter = g.interaction[1]
-        plot!(g.R, g.τ, lw=2, m=:c, ms=6, msw=0, lab="$(inter), Dᵣ=$(Dᵣ)")
+        plot!(g.R, g.D, lw=2, m=:c, ms=6, msw=0, lab="$(inter), Dᵣ=$(Dᵣ)")
     end
     plot!(title="$(dim)d")
 end

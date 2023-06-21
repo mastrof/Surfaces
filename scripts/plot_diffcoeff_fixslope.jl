@@ -27,7 +27,8 @@ function makeDplot_cylinders(df, dim, interaction, Drot)
     )
     for g in gdf
         τ = 1 ./ g.λ
-        plot!(τ, g.Dx, m=:c, ms=6, msw=0, lab=g.R[1])
+        D = (g.Dx + g.Dy)/2
+        plot!(τ, D, m=:c, ms=6, msw=0, lab=g.R[1])
     end
     plot!()
 end
