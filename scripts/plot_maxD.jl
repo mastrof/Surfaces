@@ -1,7 +1,8 @@
 ##
 using DrWatson
 using CSV, DataFrames
-using Plots
+using LaTeXStrings
+using Plots; Plots.pyplot()
 Plots.default(
     thickness_scaling = 1.5, frame = :border, grid = false,
     guidefontsize = 12, tickfontsize = 12,
@@ -12,29 +13,35 @@ Plots.default(
 
 ##
 function plot_optimalrunlength(df)
-    plot(xlab="R", ylab="optimal τ", palette=:Dark2)
-    dim = df.dim[1]
+    ylab = L"\mathrm{optimal\,\, \tau \, / \, T_s}"
+    xlab = L"\mathrm{\varphi}"
+    plot(xlab=xlab, ylab=ylab, palette=:Dark2)
+    Dᵣ = df.Drot[1]
     sort!(df, [:R])
-    gdf = groupby(df, [:interaction, :Drot])
+    gdf = groupby(df, [:interaction, :dim])
     for g in gdf
-        Dᵣ = g.Drot[1]
+        dim = g.dim[1]
+        φ = @. π * g.R^2
         inter = g.interaction[1]
-        plot!(g.R, g.τ, lw=2, m=:c, ms=6, msw=0, lab="$(inter), Dᵣ=$(Dᵣ)")
+        plot!(φ, g.τ, lw=2, m=:c, ms=6, msw=0, lab="$(dim)d, $(inter)")
     end
-    plot!(title="$(dim)d")
+    plot!(title="DᵣTₛ=$(Dᵣ)")
 end
 
 function plot_maxdiffusivity(df)
-    plot(xlab="R", ylab="max D", palette=:Dark2)
-    dim = df.dim[1]
+    ylab = L"\mathrm{max\,\, D_\parallel \, / \, (U^2 T_s)}"
+    xlab = L"\mathrm{\varphi}"
+    plot(xlab=xlab, ylab=ylab, palette=:Dark2)
+    Dᵣ = df.Drot[1]
     sort!(df, [:R])
-    gdf = groupby(df, [:interaction, :Drot])
+    gdf = groupby(df, [:interaction, :dim])
     for g in gdf
-        Dᵣ = g.Drot[1]
+        dim = g.dim[1]
+        φ = @. π * g.R^2
         inter = g.interaction[1]
-        plot!(g.R, g.D, lw=2, m=:c, ms=6, msw=0, lab="$(inter), Dᵣ=$(Dᵣ)")
+        plot!(φ, g.D, lw=2, m=:c, ms=6, msw=0, lab="$(dim)d, $(inter)")
     end
-    plot!(title="$(dim)d")
+    plot!(title="DᵣTₛ=$(Dᵣ)")
 end
 
 ##
@@ -43,12 +50,12 @@ fname = datadir("proc", type, "diffusivitymaxima.csv")
 df = CSV.read(fname, DataFrame)
 
 ##
-for dim in [2,3]
-    df_flt = subset(df, [:dim => d -> d.==dim])
+for Drot in [0,1]
+    df_flt = subset(df, [:Drot => Dᵣ -> Dᵣ.==Drot])
 
     plot_optimalrunlength(df_flt)
-    savefig(plotsdir("optimal-runlength_dim=$(dim).pdf"))
+    savefig(plotsdir("optimal-runlength_Drot=$(Drot).pdf"))
 
     plot_maxdiffusivity(df_flt)
-    savefig(plotsdir("max-diffusivity_dim=$(dim).pdf"))
+    savefig(plotsdir("max-diffusivity_Drot=$(Drot).pdf"))
 end

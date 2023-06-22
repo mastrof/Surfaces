@@ -2,12 +2,13 @@
 using DrWatson
 using DataFrames
 using CSV
-using Plots
+using LaTeXStrings
+using Plots; Plots.pyplot()
 Plots.default(
     thickness_scaling = 1.5, frame = :border, grid = false,
     guidefontsize = 12, tickfontsize = 12,
     bgcolorlegend = :transparent, fgcolorlegend = :transparent,
-    legendfontsize = 8, legendtitlefontsize = 8
+    legendfontsize = 8, legendtitlefontsize = 10
 )
 
 ##
@@ -21,14 +22,17 @@ function makeDplot_cylinders(df, dim, interaction, Drot)
     gdf = groupby(subdf, [:R])
 
     cmap = palette(:matter, length(gdf))
-    plot(palette=cmap, xlab="τ", ylab="D", xscale=:log10,
-        leg=:topleft, legendtitle="R",
-        title="$(dim)d, $(interaction), Dᵣ=$(Drot)", titlefontsize=10
+    ylab = L"\mathrm{D_{\parallel} \, / \, (U^2 T_s)}"
+    xlab = L"\mathrm{\tau \, / \, T_s}"
+    plot(palette=cmap, xlab=xlab, ylab=ylab, xscale=:log10,
+        leg=:topleft, legendtitle="φ",
+        title="$(dim)d, $(interaction), DᵣTₛ=$(Drot)", titlefontsize=10
     )
     for g in gdf
         τ = 1 ./ g.λ
         D = (g.Dx + g.Dy)/2
-        plot!(τ, D, m=:c, ms=6, msw=0, lab=g.R[1])
+        φ = round(π*g.R[1]^2; sigdigits=2)
+        plot!(τ, D, m=:c, ms=6, msw=0, lab=φ)
     end
     plot!()
 end
