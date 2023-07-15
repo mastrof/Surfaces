@@ -29,9 +29,11 @@ function MicrobeAgents.turnrate(microbe::SurfyMicrobe, model)
     end
 end
 
-function try_turn!(microbe::SurfyMicrobe, model)
-    MicrobeAgents.turn!(microbe, model)
-    if microbe.is_stuck
+function try_turn!(microbe::SurfyMicrobe{D}, model) where {D}
+    if ~microbe.is_stuck
+        MicrobeAgents.turn!(microbe, model)
+    elseif microbe.is_stuck
+        microbe.vel = rand_vel(abmrng(model), D)
         j = model.stuck_to[microbe.id]
         body = model.bodies[j]
         try_unstick!(microbe, body, model)
