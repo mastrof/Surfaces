@@ -75,8 +75,10 @@ end
 function init_motility(motilepattern, U)
     if motilepattern == :RunTumble
         return RunTumble(speed = [U])
-    elseif motilepattern == :RunReverse || motilepattern == :RunReverseFlick
-        return motilepattern(speed_forward=[U], speed_backward=[U])
+    elseif motilepattern == :RunReverse
+        return RunReverse(speed_forward = [U], speed_backward = [U])
+    elseif motilepattern == :RunReverseFlick
+        return RunReverseFlick(speed_forward = [U], speed_backward = [U])
     else
         throw(ArgumentError("Invalid motile pattern $(motilepattern)"))
     end
