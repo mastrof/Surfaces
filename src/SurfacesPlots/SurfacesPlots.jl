@@ -79,8 +79,6 @@ SurfacesTheme = Theme(
         cycle = Cycle([:color, :marker], covary=true)
     )
 )
-set_theme!(SurfacesTheme)
-
 
 cylinder(origin::Union{<:NTuple{2},<:SVector{2}}, radius) =
     Circle(Point2f(origin), radius*1f0)
