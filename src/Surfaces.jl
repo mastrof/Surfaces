@@ -29,4 +29,7 @@ include("cylinders.jl")
 include("microbe.jl")
 include("model.jl")
 
+# plotting submodule
+include("SurfacesPlots/SurfacesPlots.jl")
+
 end # module
