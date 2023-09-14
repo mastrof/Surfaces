@@ -842,7 +842,7 @@ version = "0.7.2"
 
 [[deps.MicrobeAgents]]
 deps = ["Agents", "AxisArrays", "CellListMap", "DSP", "Distributions", "GeometryBasics", "LinearAlgebra", "OffsetArrays", "Random", "Rotations", "StaticArrays"]
-git-tree-sha1 = "c94dcebb6ad44296fc30cd86c086a0d40ef9c93d"
+git-tree-sha1 = "64ebe4027387bfbb13932fcde6c1f9cf776ada26"
 repo-rev = "agents-v6"
 repo-url = "https://github.com/mastrof/MicrobeAgents.jl.git"
 uuid = "b17a4bac-8667-4a2d-84f7-1883ae0b8dbb"

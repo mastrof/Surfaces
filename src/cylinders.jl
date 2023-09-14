@@ -6,11 +6,11 @@ Representation of a cylinder with given `radius` and `height`
 whose center of mass is fixed at `origin`.
 """
 struct Cylinder{D} <: AbstractBody
-    origin::NTuple{D,Float64}
+    origin::SVector{D,Float64}
     height::Float64
     radius::Float64
 
-    Cylinder(origin::NTuple{D,<:Real}, height::Real, radius::Real) where {D} = 
+    Cylinder(origin::SVector{D,<:Real}, height::Real, radius::Real) where {D} = 
         new{D}(Float64.(origin), Float64(height), Float64(radius))
 end
 
@@ -27,7 +27,7 @@ function slide!(microbe::SurfyMicrobe{2}, cylinder::Cylinder{2}, model)
     ω = s * microbe.speed_surface / R
     d = distancevector(cylinder, microbe, model)
     θ = atan(d[2], d[1]) + ω*Δt
-    δ = (R*cos(θ), R*sin(θ))
+    δ = SVector(R*cos(θ), R*sin(θ))
     new_pos = normalize_position(MicrobeAgents._pos(cylinder) .+ δ, model)
     move_agent!(microbe, new_pos, model)
 end
@@ -46,8 +46,9 @@ function slide!(microbe::SurfyMicrobe{3}, cylinder::Cylinder{3}, model)
     d = distancevector(cylinder, microbe, model)
     θ = atan(d[2], d[1]) + ω*Δt
     Uz = microbe.vel[3] * microbe.speed_surface * Δt
-    δ = (R*cos(θ), R*sin(θ), Uz)
-    new_pos = normalize_position((cylinder.origin[1], cylinder.origin[2], microbe.pos[3]) .+ δ, model)
+    δ = SVector(R*cos(θ), R*sin(θ), Uz)
+    p = SVector(cylinder.origin[1], cylinder.origin[2], microbe.pos[3])
+    new_pos = normalize_position(p.+ δ, model)
     move_agent!(microbe, new_pos, model)
 end
 
@@ -99,16 +100,16 @@ end
 @inline MicrobeAgents.distance(a::Cylinder{3}, b, model) = distance(b, a, model)
 @inline function MicrobeAgents.distance(a, b::Cylinder{3}, model)
     p = MicrobeAgents._pos(a)
-    pxy = (p[1], p[2], 0.0)
+    pxy = SVector(p[1], p[2], 0.0)
     q = b.origin
-    qxy = (q[1], q[2], 0.0)
+    qxy = SVector(q[1], q[2], 0.0)
     distance(pxy, qxy, model)
 end
 @inline MicrobeAgents.distancevector(a::Cylinder{3}, b, model) = .-distancevector(b, a, model)
 @inline function MicrobeAgents.distancevector(a, b::Cylinder{3}, model)
     p = MicrobeAgents._pos(a)
-    pxy = (p[1], p[2], 0.0)
+    pxy = SVector(p[1], p[2], 0.0)
     q = b.origin
-    qxy = (q[1], q[2], 0.0)
+    qxy = SVector(q[1], q[2], 0.0)
     distancevector(pxy, qxy, model)
 end

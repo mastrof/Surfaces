@@ -33,7 +33,7 @@ function try_turn!(microbe::SurfyMicrobe{D}, model) where {D}
     if ~microbe.is_stuck
         MicrobeAgents.turn!(microbe, model)
     elseif microbe.is_stuck
-        microbe.vel = rand_vel(abmrng(model), D)
+        microbe.vel = random_velocity(abmrng(model), D)
         j = model.stuck_to[microbe.id]
         body = model.bodies[j]
         try_unstick!(microbe, body, model)
@@ -56,6 +56,6 @@ function try_unstick!(microbe::SurfyMicrobe{D}, slit::Slit, model) where {D}
         microbe.is_stuck = false
         model.stuck_to[microbe.id] = 0
     else
-        microbe.vel = (rand_vel(D-1)..., 0.0)
+        microbe.vel = SVector(random_velocity(abmrng(model), D-1)..., 0.0)
     end
 end 

@@ -14,5 +14,5 @@ end
 
 @inline contact(a, b, model)  = distance(a, b, model) ≲ radius(a) + radius(b)
 @inline ≲(x, y) = x ≤ y || isapprox(x, y; atol=1e-10) # \lesssim
-@inline radius(a::NTuple{D,<:Real}) where {D} = 0.0
+@inline radius(a::SVector{D,<:Real}) where {D} = 0.0
 @inline radius(a::AbstractMicrobe) = a.radius

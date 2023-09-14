@@ -9,7 +9,7 @@ function initializemodel_cylinders(
     n = 2000, Δt = 0.01,
     rng = Random.Xoshiro()
 )
-    extent = ntuple(_ -> L, dim)
+    extent = SVector{dim}(L for _ in 1:dim)
     space = ContinuousSpace(extent, periodic=true)
 
     cylinder = Cylinder(extent./2, L, R)
@@ -25,7 +25,7 @@ function initializemodel_cylinders(
             turn_rate_surface = λs,
             escape_probability = μ,
             is_stuck = false,
-            vel = rand_vel(abmrng(model), dim),
+            vel = random_velocity(abmrng(model), dim),
             motility = init_motility(motilepattern, U)
         )
     end
@@ -45,7 +45,7 @@ function initializemodel_slit(
     n = 2000, Δt = 0.01,
     rng = Random.Xoshiro()
 )
-    extent = ntuple(_ -> 2+L, dim)
+    extent = SVector{dim}(2+L for _ in 1:dim)
     space = ContinuousSpace(extent, periodic=true)
 
     slit = Slit(1.0, 1.0+L)
@@ -61,7 +61,7 @@ function initializemodel_slit(
             turn_rate_surface = λs,
             escape_probability = μ,
             is_stuck = false,
-            vel = rand_vel(abmrng(model), dim),
+            vel = random_velocity(abmrng(model), dim),
             motility = init_motility(motilepattern, U)
         )
     end

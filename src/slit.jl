@@ -8,7 +8,7 @@ function slide!(microbe::SurfyMicrobe{D}, slit::Slit, model) where {D}
         stick!(microbe, slit, model)
         if microbe.is_stuck
             # extract new velocity on surface
-            microbe.vel = (rand_vel(D-1)..., 0.0)
+            microbe.vel = SVector(random_velocity(abmrng(model), D-1)..., 0.0)
         end
         return microbe
     end
