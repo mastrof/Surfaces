@@ -6,6 +6,7 @@ using LinearAlgebra, StatsBase, Distributions, Random
 using DataFrames
 using Rotations, CoordinateTransformations
 using Agents, MicrobeAgents
+using DataFrames
 
 export SurfyMicrobe
 @agent SurfyMicrobe{D} ContinuousAgent{D,Float64} where {D} AbstractMicrobe{D} begin
@@ -21,7 +22,7 @@ export SurfyMicrobe
     state::Float64 = 0.0
 end
 
-
+include("utils.jl")
 include("bodies.jl")
 include("slit.jl")
 include("cylinders.jl")
