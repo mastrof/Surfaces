@@ -1,4 +1,4 @@
-export unpack_dataframe
+export unpack_dataframe, getx, gety, getz
 
 """
     unpack_dataframe(df)
@@ -15,3 +15,13 @@ function unpack_dataframe(df)
     # join parameters and data into a single DataFrame
     [pars df[:,cols]]
 end
+
+"""
+    trajectorize(adf::DataFrame)
+Unfold the trajectories in dataframe `adf` and turn them into
+a matrix where each column is a particle and each row is
+a timestep.
+"""
+trajectorize(adf::DataFrame) = MicrobeAgents.unfold(
+    vectorize_adf_measurement(adf, :pos), 1.0
+)
