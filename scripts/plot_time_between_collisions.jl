@@ -20,12 +20,14 @@ for R in [0.1, 0.15, 0.2, 0.25],
     for (i,fname) in enumerate(filenames)
         ax = Axis(fig[i,1:3])
         times = readdlm(datadir("proc", "collision_times", fname); skipstart=1)[:,1]
+        λ = parse_savename(fname)[2]["λ"]
         hist!(ax, times;
             bins = 0:20, alpha = 0.65, normalization = :pdf,
-            label = "λ = $(parse_savename(fname)[2]["λ"])"
+            label = "λ = $(λ)"
         )
-        vlines!(ax, [mean(times)];
-            label = "mean", linewidth = 4, linestyle = :dash
+        τ = mean(times)
+        vlines!(ax, [τ];
+            label = "mean ≈ $(round(τ, sigdigits=3))", linewidth = 4, linestyle = :dash
         )
         axislegend(ax)
         if i == 3
