@@ -19,7 +19,7 @@ for (i,R) in enumerate(Rs)
     k = ceil(Int, i/2)
     ax = Axis(fig[j, k])
     hist!(ax, collision_times[i];
-        bins = 0:0.25:40, normalization = :pdf,
+        bins = 0:0.25:60, normalization = :pdf,
         alpha = 0.75,
         label = "R = $R"
     )
@@ -28,17 +28,26 @@ for (i,R) in enumerate(Rs)
         linewidth = 6, linestyle = :dash,
         label = "mean ≈ $(round(τ, sigdigits=3))"
     )
+    τ_chernov = (1 - π*R^2) / (2R)
+    vlines!(ax, [τ_chernov];
+        linewidth = 6, linestyle = :dot,
+        label = "Chernov"
+    )
     axislegend(ax)
     if j == 2
-        ax.xlabel = "time between collisions"
+        ax.xlabel = "free path"
+    else
+        ax.xticklabelsvisible = false
     end
-    ylims!(ax, (1e-4, 7.5e-1))
+    if k == 1
+        ax.ylabel = "pdf"
+    else
+        ax.yticklabelsvisible = false
+    end
+    ylims!(ax, (1e-5, 7.5e-1))
     ax.yscale = log10
 end
-Label(fig[0,:]; text="Periodic Sinai Billiard (5e7 collisions / dataset)", fontsize=24)
+#Label(fig[0,:]; text="Periodic Sinai Billiard (5e7 collisions / dataset)", fontsize=24)
 
-if Makie.current_backend() == CairoMakie
-    save(plotsdir("sinai", "collision_times.svg"), fig)
-else
-    fig
-end
+fig
+save(plotsdir("sinai", "collision_times.png"), fig)
