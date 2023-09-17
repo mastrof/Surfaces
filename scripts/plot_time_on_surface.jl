@@ -13,7 +13,7 @@ for R in [0.1, 0.15, 0.2, 0.25],
     motilepattern in "Run".*["Tumble", "Reverse", "ReverseFlick"]
     filenames = filter(s ->
         contains(s, "R=$(R)_") && contains(s, "$(motilepattern)_") &&
-        contains(s, "Drot=$(Drot)") && contains(s, "slide"),
+        contains(s, "Drot=$(Drot)"),
         allfilenames
     )
     fig = Figure(; resolution=(600,900))
@@ -39,12 +39,11 @@ for R in [0.1, 0.15, 0.2, 0.25],
             ax.xlabel = "time on surface"
         end
     end
-    Label(fig[0,2]; text="R = $(R), Dᵣ = $(Drot), $motilepattern", fontsize=28)
+    Label(fig[0,2]; text="R = $(R), Dᵣ = $(Drot), $motilepattern", fontsize=24)
     fig
     param = @strdict R Drot motilepattern
-    
-    Makie.current_backend() == CairoMakie ? save(
-        plotsdir("collision_times", savename("bound", param, "svg")),
-        fig
-    ) : fig
+ 
+    fig
+    save(plotsdir("collision_times", savename("bound", param, "svg")), fig)
+    save(plotsdir("collision_times", savename("bound", param, "png")), fig)
 end
