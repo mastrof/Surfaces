@@ -19,7 +19,7 @@ end
         n = 100
     )
     adata = [:pos, :vel, :is_stuck]
-    nsteps = round(Int, 100/(λ*model.timestep))
+    nsteps = round(Int, 500/(λ*model.timestep))
     adf, = run!(model, nsteps; adata)
     @strdict adf
 end
@@ -41,7 +41,7 @@ dim = [2]
 L = [1.0]
 R = [0.1, 0.15, 0.2, 0.25]
 motilepattern = [:RunTumble, :RunReverse, :RunReverseFlick]
-interaction = [:stick, :slide]
+interaction = [:slide]
 U = [1.0]
 λ = exp10.(range(-1, 1, length=3))
 Drot = [0.0, 1.0]
