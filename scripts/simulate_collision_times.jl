@@ -43,7 +43,7 @@ R = [0.1, 0.15, 0.2, 0.25]
 motilepattern = [:RunTumble, :RunReverse, :RunReverseFlick]
 interaction = [:slide]
 U = [1.0]
-λ = exp10.(range(-1, 1, length=3))
+λ = exp10.(range(-1, 1, length=5))
 Drot = [0.0, 1.0]
 
 allparams = @strdict dim L R motilepattern interaction U λ Drot
