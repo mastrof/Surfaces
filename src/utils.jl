@@ -1,4 +1,4 @@
-export unpack_dataframe, getx, gety, getz
+export unpack_dataframe, trajectorize
 
 """
     unpack_dataframe(df)
