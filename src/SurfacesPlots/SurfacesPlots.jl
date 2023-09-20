@@ -11,7 +11,7 @@ export SurfacesTheme
 export cylinder, cylinder_array
 
 
-palette(colors::Symbol, n::Int) = get(colorscheme[colors], range(0,1,length=n))
+palette(colors::Symbol, n::Int) = get(colorschemes[colors], range(0,1,length=n))
 _COLORSCHEME = colorschemes[:Dark2_8]
 _MARKERS = [
     :circle, :rect, :diamond,
