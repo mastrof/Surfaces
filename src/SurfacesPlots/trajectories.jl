@@ -1,6 +1,6 @@
 export draw_trajectories!
 
-function draw_trajectories!(fig, ax, x, y, R)
+function draw_trajectories!(fig, ax, x, y, R; kwargs...)
     xmin, xmax = extrema(x)
     ymin, ymax = extrema(y)
     xmin, ymin = floor.(Int, (xmin, ymin))
@@ -13,7 +13,7 @@ function draw_trajectories!(fig, ax, x, y, R)
     end
 
     for j in axes(x, 2)
-        lines!(ax, view(x, :, j), view(y, :, j))
+        lines!(ax, view(x, :, j), view(y, :, j); kwargs...)
     end
 
     xlims!(ax, (xmin, xmax))
