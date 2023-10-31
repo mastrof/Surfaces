@@ -2,8 +2,9 @@
 using DrWatson
 using DataFrames
 using CSV
+using Measurements
 using LaTeXStrings
-using Plots; Plots.pyplot()
+using Plots; Plots.gr()
 Plots.default(
     thickness_scaling = 1.5, frame = :border, grid = false,
     guidefontsize = 12, tickfontsize = 12,
@@ -12,11 +13,10 @@ Plots.default(
 )
 
 ##
-function makeDplot_cylinders(df, dim, interaction, Drot, mot)
+function makeDplot_cylinders(df, dim, interaction, mot)
     flt = [
         :dim => d -> d .== dim,
         :interaction => inter -> inter .== interaction,
-        :Drot => Dr -> Dr .== Drot,
         :motilepattern => m -> m .== mot
     ]
     subdf = subset(df, flt)
@@ -27,14 +27,13 @@ function makeDplot_cylinders(df, dim, interaction, Drot, mot)
     xlab = L"\mathrm{U \tau \, / \, W}"
     plot(palette=cmap, xlab=xlab, ylab=ylab, xscale=:log10,
         leg=:topleft, legendtitle="R",
-        title="$(mot) $(dim)d, $(interaction), DᵣW/U=$(Drot)", titlefontsize=10
+        title="$(mot) $(dim)d, $(interaction)", titlefontsize=10
     )
-    τᵣ = 1 / (2*Drot)
-    Dtheo(τ) = (Drot == 0 ? τ : (τ*τᵣ) / (τ + τᵣ)) / dim
-    #plot!(range(0.1,5,length=500), Dtheo, lc=:green, lw=2, lab=false)
     for g in gdf
         τ = 1 ./ g.λ
-        D = (g.Dx + g.Dy)/2
+        Dx = g.Dx .± g.deltaDx
+        Dy = g.Dy .± g.deltaDy
+        D = (Dx .+ Dy)/2
         R = g.R[1]
         plot!(τ, D, m=:c, ms=6, msw=0, lab=R)
     end
@@ -45,61 +44,25 @@ end
 type = "cylinders"
 fname = datadir("proc", type, "diffusioncoefficient_fixslope.csv")
 df = CSV.read(fname, DataFrame)
-sort!(df, [:λ, :R, :Drot, :dim])
+sort!(df, [:λ, :R, :dim])
 
 ##
-for dim in [2,3], interaction in ["stick", "slide"], Drot in [0,1], mot in ["RunTumble"]
+for dim in [2], interaction in ["stick", "slide"],
+    mot in ["RunTumble", "RunReverse", "RunReverseFlick"]
     τ = range(0.1, 15, length=500)
-    plt = makeDplot_cylinders(df, dim, interaction, Drot, mot)
-    if Drot == 0
-        D = τ / dim
-        plot!(τ, D, lc=:green, lw=2, alpha=0.5, lab=false)
-        plot!(plt, ylims=(0.01, 0.45))
-    else
-        #τᵣ = 1 / (2*Drot)
-        #D = @. τ * τᵣ / (dim * (τ + τᵣ))
-        D = @. (1 / dim) * (1 / (1/τ + 2*Drot))
-        plot!(τ, D, lc=:green, lw=2, alpha=0.5, lab=false)
-        plot!(plt, ylims=(0.01, 0.175))
-    end
-    config = @strdict type dim interaction Drot mot
+    plt = makeDplot_cylinders(df, dim, interaction, mot)
+    Drot = 0.1 # config["Drot"]
+    D = if mot == "RunTumble"
+            @. (1/dim) * (1 / (1/τ + (dim-1)*Drot))
+        elseif mot == "RunReverse"
+            @. (1/dim) * (1 / (2/τ + (dim-1)*Drot))
+        elseif mot == "RunReverseFlick"
+            @. (1/2dim) * (1/τ + 2*Drot) / (1/τ + Drot)^2
+        end
+    #D = @. (1 / dim) * (1 / (1/τ + 2*Drot))
+    plot!(τ, D, lc=:green, lw=2, alpha=0.5, lab=false)
+    plot!(plt, ylims=(0.01, 0.35))
+    config = @strdict type dim interaction mot
     savefig(plt, plotsdir(savename("D", config, "png")))
     savefig(plt, plotsdir(savename("D", config, "pdf")))
 end
-
-##
-for dim in [2], interaction in ["stick", "slide"], Drot in [1], mot in ["RunReverse"]
-    τ = range(0.1, 15, length=500)
-    plt = makeDplot_cylinders(df, dim, interaction, Drot, mot)
-    if Drot == 0
-        plot!(plt, ylims=(0.01, 0.45))
-    else
-        #τᵣ = 1 / (2*Drot)
-        #D = @. τ * τᵣ / (2 * dim * (τ + τᵣ))
-        D = @. (1/dim) * (1 / (2/τ + 2*Drot))
-        plot!(τ, D, lc=:green, lw=2, alpha=0.5, lab=false)
-        plot!(plt, ylims=(0.01, 0.175))
-    end
-    config = @strdict type dim interaction Drot mot
-    savefig(plt, plotsdir(savename("D", config, "png")))
-    savefig(plt, plotsdir(savename("D", config, "pdf")))
-end
-
-##
-for dim in [2], interaction in ["stick", "slide"], Drot in [1], mot in ["RunReverseFlick"]
-    τ = range(0.1, 15, length=500)
-    plt = makeDplot_cylinders(df, dim, interaction, Drot, mot)
-    if Drot == 0
-        plot!(plt, ylims=(0.01, 0.45))
-    else
-        τᵣ = 1 / (2*Drot)
-        D = @. 1 / (2*dim) * (1/τ + 2/τᵣ) / (1/τ + 1/τᵣ)^2
-        plot!(τ, D, lc=:green, lw=2, alpha=0.5, lab=false)
-        plot!(plt, ylims=(0.01, 0.175))
-    end
-    config = @strdict type dim interaction Drot mot
-    savefig(plt, plotsdir(savename("D", config, "png")))
-    savefig(plt, plotsdir(savename("D", config, "pdf")))
-end
-
-
