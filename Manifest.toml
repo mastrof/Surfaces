@@ -2,7 +2,7 @@
 
 julia_version = "1.9.2"
 manifest_format = "2.0"
-project_hash = "39b5c0734e7a2851c07cb6c299582b53661a492b"
+project_hash = "686bfe95c17a42046aa39f87b870d79b0769de6f"
 
 [[deps.AbstractFFTs]]
 deps = ["LinearAlgebra"]
@@ -1043,6 +1043,24 @@ deps = ["AxisArrays", "DSP", "LinearAlgebra", "OffsetArrays", "StatsBase"]
 git-tree-sha1 = "56bb4ec4b9b0fef465ab46a140580a3d153bb908"
 uuid = "13c93d70-909c-440c-af92-39d48ffa2ba2"
 version = "0.1.0"
+
+[[deps.Measurements]]
+deps = ["Calculus", "LinearAlgebra", "Printf", "Requires"]
+git-tree-sha1 = "bf645d369306c848b6e44e37a1e216b15468c4fc"
+uuid = "eff96d63-e80a-5855-80a2-b1b0885c5ab7"
+version = "2.10.0"
+
+    [deps.Measurements.extensions]
+    MeasurementsJunoExt = "Juno"
+    MeasurementsRecipesBaseExt = "RecipesBase"
+    MeasurementsSpecialFunctionsExt = "SpecialFunctions"
+    MeasurementsUnitfulExt = "Unitful"
+
+    [deps.Measurements.weakdeps]
+    Juno = "e5e0dc1b-0480-54bc-9374-aad01c23163d"
+    RecipesBase = "3cdcf5f2-1ef4-517c-9805-6587b60abb01"
+    SpecialFunctions = "276daf66-3868-5448-9aa4-cd146d93841b"
+    Unitful = "1986cc42-f94f-5a68-af5c-568840ba703d"
 
 [[deps.MeshIO]]
 deps = ["ColorTypes", "FileIO", "GeometryBasics", "Printf"]
