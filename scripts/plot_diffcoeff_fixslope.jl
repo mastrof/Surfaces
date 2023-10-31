@@ -1,5 +1,6 @@
 ##
 using DrWatson
+@quickactivate :Surfaces
 using DataFrames
 using CSV
 using Measurements
@@ -47,19 +48,11 @@ df = CSV.read(fname, DataFrame)
 sort!(df, [:λ, :R, :dim])
 
 ##
-for dim in [2], interaction in ["stick", "slide"],
+for dim in [2], interaction in ["stick", "slide"], Drot in [0.1],
     mot in ["RunTumble", "RunReverse", "RunReverseFlick"]
     τ = range(0.1, 15, length=500)
     plt = makeDplot_cylinders(df, dim, interaction, mot)
-    Drot = 0.1 # config["Drot"]
-    D = if mot == "RunTumble"
-            @. (1/dim) * (1 / (1/τ + (dim-1)*Drot))
-        elseif mot == "RunReverse"
-            @. (1/dim) * (1 / (2/τ + (dim-1)*Drot))
-        elseif mot == "RunReverseFlick"
-            @. (1/2dim) * (1/τ + 2*Drot) / (1/τ + Drot)^2
-        end
-    #D = @. (1 / dim) * (1 / (1/τ + 2*Drot))
+    D = @. bulk_diffusivity(τ, Drot, dim, mot)
     plot!(τ, D, lc=:green, lw=2, alpha=0.5, lab=false)
     plot!(plt, ylims=(0.01, 0.35))
     config = @strdict type dim interaction mot

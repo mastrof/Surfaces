@@ -29,6 +29,9 @@ include("cylinders.jl")
 include("microbe.jl")
 include("model.jl")
 
+# postprocessing
+include("theory.jl")
+
 # plotting submodule
 include("SurfacesPlots/SurfacesPlots.jl")
 
