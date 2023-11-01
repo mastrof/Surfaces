@@ -1,5 +1,5 @@
 using DrWatson
-using Surfaces
+@quickactivate :Surfaces
 using JLD2, CSV
 using MicrobeAgents: vectorize_adf_measurement
 using DataFrames
