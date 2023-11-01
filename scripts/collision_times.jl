@@ -3,7 +3,6 @@ using Surfaces
 using JLD2, CSV
 using MicrobeAgents: vectorize_adf_measurement
 using DataFrames
-using GLMakie
 
 ##
 function free_path(s::AbstractVector{Bool}; Δt=0.01)
@@ -45,8 +44,8 @@ function bound_path(s::AbstractVector{Bool}; Δt=0.01)
 end
 
 ##
-filenames = readdir(datadir("sims", "collision_times"); join=true)
-for fname in filenames
+filenames = readdir(datadir("sims", "cylinders"); join=true)
+Threads.@threads for fname in filenames
     param = parse_savename(fname)[2]
     f = jldopen(fname)
     adf = f["adf"]
