@@ -64,7 +64,7 @@ trajfiles(type) = filter(
     s -> startswith(s, "traj") && endswith(s, "jld2"),
     readdir(joinpath(savedir, "sims", type))
 )
-@everywhere get_emsd(fname) = get_emsd(fname, "slit")
-pmap(get_emsd, trajfiles("slit"))
+#@everywhere get_emsd(fname) = get_emsd(fname, "slit")
+#pmap(get_emsd, trajfiles("slit"))
 @everywhere get_emsd(fname) = get_emsd(fname, "cylinders")
 pmap(get_emsd, trajfiles("cylinders"))
