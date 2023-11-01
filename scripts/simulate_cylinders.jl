@@ -17,10 +17,9 @@ end
         U, λ, 1.0, # match with bulk parameters
         interaction == :stick ? stick! : slide!
     )
-    adata = [:pos]
+    adata = [:pos, :is_stuck]
     when(model,s) = s % 5 == 0
-    # nsteps = 1_000_000
-    nsteps = round(Int, 800/(λ*model.timestep))
+    nsteps = round(Int, 1000/(λ*model.timestep))
     adf, = run!(model, nsteps; adata, when)
     @strdict adf
 end
@@ -38,14 +37,14 @@ end
 end
 
 ## Setup parameters and run
-dim = [2, 3]
+dim = [2]
 L = [1.0]
 R = [0.1, 0.15, 0.2, 0.25]
-motilepattern = [:RunTumble]
+motilepattern = [:RunTumble, :RunReverse, :RunReverseFlick]
 interaction = [:stick, :slide]
 U = [1.0]
-λ = exp10.(range(-1.5, 1, length=20))[3:end]
-Drot = [0.0, 1.0]
+λ = exp10.(range(-1, 1, length=15))
+Drot = [0.1]
 
 allparams = @strdict dim L R motilepattern interaction U λ Drot
 dicts = dict_list(allparams)
