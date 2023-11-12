@@ -5,7 +5,7 @@ using MicrobeAgents: vectorize_adf_measurement
 using DataFrames
 
 ##
-function free_path(s::AbstractVector{Bool}; Δt=0.01)
+@everywhere function free_path(s::AbstractVector{Bool}; Δt=0.01)
     ls = length(s)
     iter = zip(view(s, 1:ls-1), view(s, 2:ls))
     start = Int[0]
@@ -24,7 +24,7 @@ function free_path(s::AbstractVector{Bool}; Δt=0.01)
     end
 end
 
-function bound_path(s::AbstractVector{Bool}; Δt=0.01)
+@everywhere function bound_path(s::AbstractVector{Bool}; Δt=0.01)
     ls = length(s)
     iter = zip(view(s, 1:ls-1), view(s, 2:ls))
     start = Int[]
@@ -44,8 +44,7 @@ function bound_path(s::AbstractVector{Bool}; Δt=0.01)
 end
 
 ##
-filenames = readdir(datadir("sims", "cylinders"); join=true)
-Threads.@threads for fname in filenames
+@everywhere function time_fractions(fname)
     param = parse_savename(fname)[2]
     f = jldopen(fname)
     adf = f["adf"]
@@ -58,3 +57,8 @@ Threads.@threads for fname in filenames
     fout_surface = replace(fname, "sims" => "proc", "traj" => "bound", "jld2" => "csv")
     CSV.write(fout_surface, time_on_surface |> Tables.table)
 end
+
+##
+savedir = haskey(ENV, "SCRATCH") ? joinpath(ENV["SCRATCH"], "Surfaces") : datadir()
+filenames = readdir(joinpath(savedir, "sims", "cylinders"); join=true)
+pmap(time_fractions, filenames)
