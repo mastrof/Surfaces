@@ -6,7 +6,7 @@ using LinearAlgebra, StatsBase, Distributions, Random
 using DataFrames
 using Rotations, CoordinateTransformations
 using Agents, MicrobeAgents
-using DataFrames
+using BubbleBath
 
 export SurfyMicrobe
 @agent SurfyMicrobe{D} ContinuousAgent{D,Float64} where {D} AbstractMicrobe{D} begin
