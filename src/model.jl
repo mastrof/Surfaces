@@ -47,7 +47,7 @@ function initializemodel_randomcylinders(
     extent = SVector{dim}(L for _ in 1:dim)
     space = ContinuousSpace(extent, periodic=true)
 
-    bodies = bubblebath(pdf_R, packing_fraction, Tuple(extent))
+    bodies = bubblebath(pdf_R, packing_fraction, Tuple(extent); rng)
     cylinders = [Cylinder(SVector(b.pos), L, b.radius) for b in bodies]
 
     model = UnremovableABM(MicrobeType{dim}, space, Δt; rng)
@@ -70,13 +70,12 @@ function initializemodel_randomcylinders(
 
     surfaces!(model, cylinders, interaction)
     @info "Initializing neighbor list..."
-    cutoff_radius = L / 3
-    abmproperties(model)[:neighborlist] = map(allids(model)) do id
-        [j for j in eachindex(cylinders) if distance(model[id], cylinders[j], model) < cutoff_radius]
-    end
+    cutoff_radius = L / 5
+    abmproperties(model)[:neighborlist] = map(_ -> Int[], allids(model))
+    update_neighbors!(model, cutoff_radius)
     @info "Neighbor list initialized"
     # add neighbor list updater to model
-    model → (model) -> update_neighbors!(model, cutoff_radius, abmproperties(model)[:t] % 10 == 0)
+    model → (model) -> update_neighbors!(model, cutoff_radius, abmproperties(model)[:t] % 50 == 0)
 
     return model
 end
@@ -89,7 +88,10 @@ function update_neighbors!(model, cutoff)
     neighbors = abmproperties(model)[:neighborlist]
     bodies = abmproperties(model)[:bodies]
     for id in allids(model)
-        neighbors[id] = [j for j in eachindex(bodies) if distance(model[id], bodies[j], model) < cutoff]
+        neighbors[id] = [
+            j for j in eachindex(bodies)
+            if distance(model[id], bodies[j], model) - radius(bodies[j]) < cutoff
+        ]
     end
     nothing
 end
