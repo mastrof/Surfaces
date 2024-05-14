@@ -6,7 +6,13 @@ function MicrobeAgents.microbe_step!(microbe::SurfyMicrobe, model)
         MicrobeAgents.rotational_diffusion!(microbe, model)
     end
     # check if interactions with any body are occuring
-    for (j, body) in enumerate(model.bodies)
+    bodies = abmproperties(model)[:bodies]
+    nearby_bodies = if haskey(abmproperties(model), :neighborlist)
+        collect(enumerate(bodies))[abmproperties(model)[:neighborlist][microbe.id]]
+    else
+        enumerate(bodies)
+    end
+    for (j, body) in nearby_bodies
         model.surface!(microbe, body, model)
         if microbe.is_stuck
             model.stuck_to[microbe.id] = j

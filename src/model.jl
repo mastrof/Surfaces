@@ -1,4 +1,4 @@
-export initializemodel_cylinders, initializemodel_slit
+export initializemodel_cylinders, initializemodel_randomcylinders, initializemodel_slit
 
 function initializemodel_cylinders(
     dim, L, R,
@@ -33,6 +33,77 @@ function initializemodel_cylinders(
     surfaces!(model, cylinder, interaction)
 
     return model
+end
+
+function initializemodel_randomcylinders(
+    dim, L, pdf_R, packing_fraction,
+    MicrobeType, motilepattern,
+    U, λ, Drot,
+    Us, λs, μ,
+    interaction;
+    n = 2000, Δt = 0.01,
+    rng = Random.Xoshiro()
+)
+    extent = SVector{dim}(L for _ in 1:dim)
+    space = ContinuousSpace(extent, periodic=true)
+
+    bodies = bubblebath(pdf_R, packing_fraction, Tuple(extent))
+    cylinders = [Cylinder(SVector(b.pos), L, b.radius) for b in bodies]
+
+    model = UnremovableABM(MicrobeType{dim}, space, Δt; rng)
+    for _ in 1:n
+        pos = Tuple(rand(rng, dim) .* extent)
+        while any([norm(pos .- b.pos) .< b.radius for b in bodies])
+            pos = Tuple(rand(rng, dim) .* extent)
+        end
+        add_agent!(pos, model;
+            rotational_diffusivity = Drot,
+            speed = U,
+            turn_rate = λ,
+            speed_surface = Us,
+            escape_probability = μ,
+            is_stuck = false,
+            vel = random_velocity(abmrng(model), dim),
+            motility = init_motility(motilepattern, U),
+        )
+    end
+
+    surfaces!(model, cylinders, interaction)
+    @info "Initializing neighbor list..."
+    cutoff_radius = L / 3
+    abmproperties(model)[:neighborlist] = map(allids(model)) do id
+        [j for j in eachindex(cylinders) if distance(model[id], cylinders[j], model) < cutoff_radius]
+    end
+    @info "Neighbor list initialized"
+    # add neighbor list updater to model
+    model → (model) -> update_neighbors!(model, cutoff_radius, abmproperties(model)[:t] % 10 == 0)
+
+    return model
+end
+
+function update_neighbors!(model, cutoff, condition)
+    condition && update_neighbors!(model, cutoff)
+    nothing
+end
+function update_neighbors!(model, cutoff)
+    neighbors = abmproperties(model)[:neighborlist]
+    bodies = abmproperties(model)[:bodies]
+    for id in allids(model)
+        neighbors[id] = [j for j in eachindex(bodies) if distance(model[id], bodies[j], model) < cutoff]
+    end
+    nothing
+end
+
+# overload because of implementation bug
+function MicrobeAgents.neighborlist(
+    model::ABM, y::AbstractVector{<:Cylinder}, cutoff
+)
+    microbes = MicrobeAgents.make_position_vector(model)
+    MicrobeAgents.neighborlist(microbes, MicrobeAgents.make_position_vector(y), abmspace(model), cutoff)
+end
+# need overload for neighborlist
+function MicrobeAgents.make_position_vector(cylinders::AbstractVector{<:Cylinder})
+    MicrobeAgents._pos.(cylinders)
 end
 
 
