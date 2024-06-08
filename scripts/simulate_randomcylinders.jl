@@ -12,7 +12,7 @@ end
 ## Routines for data production
 @everywhere function runsim(params)
     @unpack dim, L, pdf_R, φ, motilepattern, U, λ, Drot, interaction = params
-    Δt = 1 / (500*λ)
+    Δt = 1 / (200*λ)
     model = initializemodel_randomcylinders(
         dim, L, pdf_R, φ,
         SurfyMicrobe, motilepattern,
@@ -42,13 +42,13 @@ end
 
 ## Setup parameters and run
 dim = [2]
-L = [2e3]
+L = [200]
 pdf_R = [Uniform(0.1, 1.9)]
-φ = [0.35]
+φ = [0.3]
 motilepattern = [:RunTumble]
 interaction = [:stick]
 U = [1.0]
-λ = exp10.(range(log10(1/50), log10(1/0.1), length=15))
+λ = exp10.(range(-1, 1; length=10))
 Drot = [0.1]
 
 allparams = @strdict dim L pdf_R φ motilepattern interaction U λ Drot
