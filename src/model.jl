@@ -70,7 +70,7 @@ function initializemodel_randomcylinders(
 
     surfaces!(model, cylinders, interaction)
     @info "Initializing neighbor list..."
-    cutoff_radius = L / 5
+    cutoff_radius = 60 * U * Δt
     abmproperties(model)[:neighborlist] = map(_ -> Int[], allids(model))
     update_neighbors!(model, cutoff_radius)
     @info "Neighbor list initialized"
