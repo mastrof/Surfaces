@@ -33,7 +33,4 @@ include("model.jl")
 # postprocessing
 include("theory.jl")
 
-# plotting submodule
-include("SurfacesPlots/SurfacesPlots.jl")
-
 end # module
