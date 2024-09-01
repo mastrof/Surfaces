@@ -1,4 +1,7 @@
-export initializemodel_cylinders, initializemodel_randomcylinders, initializemodel_slit
+export initializemodel_cylinders,
+    initializemodel_rectangles,
+    initializemodel_randomcylinders,
+    initializemodel_slit
 
 function initializemodel_cylinders(
     dim, L, R,
@@ -31,6 +34,41 @@ function initializemodel_cylinders(
     end
 
     surfaces!(model, cylinder, interaction)
+
+    return model
+end
+
+function initializemodel_rectangles(
+    dim, L, Ax, Ay,
+    MicrobeType, motilepattern,
+    U, λ, Drot,
+    Us, λs, μ,
+    interaction;
+    n = 2000, Δt = 0.01,
+    rng = Random.Xoshiro()
+)
+    extent = SVector{dim}(L for _ in 1:dim)
+    space = ContinuousSpace(extent, periodic=true)
+
+    rectangle = Rectangle(extent./2, Ax, Ay)
+
+    model = UnremovableABM(MicrobeType{dim}, space, Δt; rng)
+    for _ in 1:n
+        pos = ntuple(_ -> 0.0, dim)
+        add_agent!(pos, model;
+            rotational_diffusivity = Drot,
+            speed = U,
+            turn_rate = λ,
+            speed_surface = Us,
+            turn_rate_surface = λs,
+            escape_probability = μ,
+            is_stuck = false,
+            vel = random_velocity(abmrng(model), dim),
+            motility = init_motility(motilepattern, U)
+        )
+    end
+
+    surfaces!(model, rectangle, interaction)
 
     return model
 end

@@ -65,3 +65,13 @@ function try_unstick!(microbe::SurfyMicrobe{D}, slit::Slit, model) where {D}
         microbe.vel = SVector(random_velocity(abmrng(model), D-1)..., 0.0)
     end
 end 
+function try_unstick!(microbe::SurfyMicrobe{2}, rect::Rectangle, model)
+    v = microbe.vel .* microbe.speed
+    Δt = model.timestep
+    pos = microbe.pos
+    test_pos = @. pos + v * Δt
+    if sdf(test_pos, rect) > 0
+        microbe.is_stuck = false
+        model.stuck_to[microbe.id] = 0
+    end
+end
