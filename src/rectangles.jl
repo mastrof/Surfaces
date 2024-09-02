@@ -21,8 +21,11 @@ end
 Signed distance function of the rectangle in two dimensions.
 """
 function sdf(pos::SVector{2,<:Real}, rect::Rectangle)
+    s, c = sincos(rect.orientation)
+    x, y = pos .- rect.origin
+    u = (c*x + s*y, c*y - s*x)
     a = (rect.edge_x, rect.edge_y)
-    edge_distance = abs.(pos .- rect.origin) .- a
+    edge_distance = abs.(u) .- a
     outside_distance = norm(max(z,0) for z in edge_distance)
     inside_distance = min(maximum(edge_distance), 0)
     return inside_distance + outside_distance
@@ -44,21 +47,56 @@ function stick!(microbe::SurfyMicrobe{2}, rectangle::Rectangle, model)
     microbe
 end
 
+function rectangles_intersect(A::Rectangle, B::Rectangle)
+    cA = A.origin
+    cB = B.origin
+    θA = A.orientation
+    scA = sincos(-θA)
+    θB = B.orientation
+    scB = sincos(-θB)
+    axA = (A.edge_x, A.edge_y)
+    axB = (B.edge_x, B.edge_y)
+    offsets = [(-1,-1), (-1,+1), (+1,-1), (+1,+1)]
+    vtxA = map(offsets) do offset
+        x0, y0 = offset .* axA
+        s, c = scA
+        x = c*x0 + s*y0
+        y = c*y0 - s*x0
+        SVector{2}(x + cA[1], y + cA[2])
+    end
+    vtxB = map(offsets) do offset
+        x0, y0 = offset .* axB
+        s, c = scB
+        x = c*x0 + s*y0
+        y = c*y0 - s*x0
+        SVector{2}(x + cB[1], y + cB[2])
+    end
+    xs_A = first.(vtxA)
+    ys_A = last.(vtxA)
+    xs_B = first.(vtxB)
+    ys_B = last.(vtxB)
+    leftX_A, rightX_A = extrema(xs_A)
+    leftX_B, rightX_B = extrema(xs_B)
+    bottomY_A, topY_A = extrema(ys_A)
+    bottomY_B, topY_B = extrema(ys_B)
+    x_within = any(leftX_A .<= xs_B .<= rightX_A)
+    y_within = any(bottomY_A .<= ys_B .<= topY_A)
+    println(x_within)
+    println(y_within)
+    if ((bottomY_A <= topY_B <= topY_A) && x_within) ||
+        ((bottomY_A <= bottomY_B <= topY_A) && x_within) ||
+        ((leftX_A <= leftX_B <= rightX_A) && y_within) ||
+        ((leftX_A <= rightX_B <= rightX_A) && y_within)
+        return true
+    else
+        return false
+    end
+end
 
-@inline MicrobeAgents._pos(c::Rectangle) = c.origin
+@inline radius(r::Rectangle) = max(r.edge_x, r.edge_y)
+@inline MicrobeAgents._pos(r::Rectangle) = r.origin
 @inline MicrobeAgents.distance(a::Rectangle, b, model) = distance(b, a, model)
 @inline function MicrobeAgents.distance(a, b::Rectangle, model)
     p = MicrobeAgents._pos(a)
-    edges = SVector{2}(rect.edge_x, rect.edge_y)
-    u = distance
-    edge_distance = distance(p,)
-    distance(pxy, qxy, model)
-end
-@inline MicrobeAgents.distancevector(a::Cylinder{3}, b, model) = .-distancevector(b, a, model)
-@inline function MicrobeAgents.distancevector(a, b::Cylinder{3}, model)
-    p = MicrobeAgents._pos(a)
-    pxy = SVector(p[1], p[2], 0.0)
-    q = b.origin
-    qxy = SVector(q[1], q[2], 0.0)
-    distancevector(pxy, qxy, model)
+    sdf(p, b)
 end

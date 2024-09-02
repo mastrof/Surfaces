@@ -1,6 +1,7 @@
 export initializemodel_cylinders,
     initializemodel_rectangles,
     initializemodel_randomcylinders,
+    initializemodel_randomrectangles,
     initializemodel_slit
 
 function initializemodel_cylinders(
@@ -118,6 +119,56 @@ function initializemodel_randomcylinders(
     return model
 end
 
+function initializemodel_randomrectangles(
+    dim, L, Ax, Ay, N,
+    MicrobeType, motilepattern,
+    U, λ, Drot,
+    Us, λs, μ,
+    interaction;
+    n = 2000, Δt = 0.01,
+    rng = Random.Xoshiro()
+)
+    extent = SVector{dim}(L for _ in 1:dim)
+    space = ContinuousSpace(extent, periodic=false)
+
+    re = Regex("rectangles.*Ax=$(Ax).*Ay=$(Ay).*L=$(L).*N=$(N).*dat")
+    files = readdir(datadir("sims", "randomrectangles"); join=true)
+    filter!(x -> contains(x, re), files)
+    landscape_file = first(files)
+    rectangles = map(eachrow(readdlm(landscape_file))) do (x, y, θ)
+        Rectangle(SVector{2}(x,y), Ax, Ay, θ)
+    end
+
+    model = UnremovableABM(MicrobeType{dim}, space, Δt; rng)
+    for _ in 1:n
+        pos = Tuple(rand(rng, dim) .* extent)
+        while any([Surfaces.sdf(SVector(pos), rect) <= 0 for rect in rectangles])
+            pos = Tuple(rand(rng, dim) .* extent)
+        end
+        add_agent!(pos, model;
+            rotational_diffusivity = Drot,
+            speed = U,
+            turn_rate = λ,
+            speed_surface = Us,
+            escape_probability = μ,
+            is_stuck = false,
+            vel = random_velocity(abmrng(model), dim),
+            motility = init_motility(motilepattern, U),
+        )
+    end
+
+    surfaces!(model, rectangles, interaction)
+    @info "Initializing neighbor list..."
+    cutoff_radius = 60 * U * Δt
+    abmproperties(model)[:neighborlist] = map(_ -> Int[], allids(model))
+    update_neighbors!(model, cutoff_radius)
+    @info "Neighbor list initialized"
+    # add neighbor list updater to model
+    model → (model) -> update_neighbors!(model, cutoff_radius, abmproperties(model)[:t] % 50 == 0)
+
+    return model
+end
+
 function update_neighbors!(model, cutoff, condition)
     condition && update_neighbors!(model, cutoff)
     nothing
@@ -136,14 +187,14 @@ end
 
 # overload because of implementation bug
 function MicrobeAgents.neighborlist(
-    model::ABM, y::AbstractVector{<:Cylinder}, cutoff
+    model::ABM, y::AbstractVector{<:AbstractBody}, cutoff
 )
     microbes = MicrobeAgents.make_position_vector(model)
     MicrobeAgents.neighborlist(microbes, MicrobeAgents.make_position_vector(y), abmspace(model), cutoff)
 end
 # need overload for neighborlist
-function MicrobeAgents.make_position_vector(cylinders::AbstractVector{<:Cylinder})
-    MicrobeAgents._pos.(cylinders)
+function MicrobeAgents.make_position_vector(bodies::AbstractVector{<:AbstractBody})
+    MicrobeAgents._pos.(bodies)
 end
 
 

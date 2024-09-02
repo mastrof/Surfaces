@@ -1,7 +1,7 @@
 module Surfaces
 
 using JLD2, DelimitedFiles
-using DrWatson: parse_savename
+using DrWatson: parse_savename, datadir
 using LinearAlgebra, StatsBase, Distributions, Random
 using DataFrames
 using Rotations, CoordinateTransformations
