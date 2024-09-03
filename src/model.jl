@@ -129,7 +129,7 @@ function initializemodel_randomrectangles(
     rng = Random.Xoshiro()
 )
     extent = SVector{dim}(L for _ in 1:dim)
-    space = ContinuousSpace(extent, periodic=false)
+    space = ContinuousSpace(extent, periodic=true)
 
     re = Regex("rectangles.*Ax=$(Ax).*Ay=$(Ay).*L=$(L).*N=$(N).*dat")
     files = readdir(datadir("sims", "randomrectangles"); join=true)
