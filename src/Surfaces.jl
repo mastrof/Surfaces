@@ -15,7 +15,7 @@ export SurfyMicrobe
     motility::AbstractMotility = RunTumble()
     turn_rate::Float64 = 1.0
     turn_rate_surface::Float64 = turn_rate
-    escape_probability::Float64 = 1.0
+    escape_probability::Float64 = 0.0
     is_stuck::Bool = false
     rotational_diffusivity::Float64 = 0.0
     radius::Float64 = 0.0

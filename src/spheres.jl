@@ -28,6 +28,16 @@ function stick!(microbe::SurfyMicrobe{3}, sphere::Sphere, model)
         walk!(microbe, ε.*s, model)
     end
     microbe.is_stuck = contact(microbe, sphere, model)
+    # if escape probability > 0 microbe may escape immediately
+    if microbe.escape_probability > 0
+        if rand(abmrng(model)) < microbe.escape_probability
+            # try escape until a direction
+            # away from surface is found
+            while microbe.is_stuck
+                try_turn!(microbe, model)
+            end
+        end
+    end
     microbe
 end
 
