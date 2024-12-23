@@ -27,6 +27,7 @@ include("bodies.jl")
 include("slit.jl")
 include("cylinders.jl")
 include("rectangles.jl")
+include("spheres.jl")
 include("microbe.jl")
 include("model.jl")
 

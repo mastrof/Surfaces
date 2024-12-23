@@ -41,10 +41,10 @@ end
 
 ## Setup parameters and run
 dim = [2]
-L = [50]
+L = [25]
 Ax = [0.05]
 Ay = [0.5]
-N = [851]
+N = [823]
 motilepattern = [:RunTumble, :RunReverse]
 interaction = [:stick]
 U = [1.0]
@@ -55,3 +55,4 @@ allparams = @strdict dim L Ax Ay N motilepattern interaction U λ Drot
 dicts = dict_list(allparams)
 
 pmap(produce_data, dicts)
+
