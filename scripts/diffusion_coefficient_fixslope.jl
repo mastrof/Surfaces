@@ -61,7 +61,7 @@ function makefit(model, x, y, p)
 end
 
 ##
-for type in ["cylinders"]
+for type in ["randomcylinders", "cylinders"]
     filenames = filter(s -> startswith(s, "emsd"), readdir(datadir("proc", type)))
     isempty(filenames) && continue
     df = init_dataframe(first(filenames))
@@ -73,6 +73,6 @@ for type in ["cylinders"]
         fitpars = config["dim"] == 2 ? diffcoeff2d(data; t₀, t₁) : diffcoeff3d(data; t₀, t₁)
         push!(df, Dict(config..., fitpars...))
     end
-    fout = datadir("proc", type, "diffusioncoefficient_fixslope.csv")
+    fout = datadir("proc", type, "diffusioncoefficient.csv")
     CSV.write(fout, df)
 end
