@@ -6,10 +6,11 @@ using Distributed
     using JLD2, DelimitedFiles
     using MeanSquaredDisplacement
     using MicrobeAgents: vectorize_adf_measurement, unfold
+    using StaticArrays: SVector
 end
 
 ## Functions to evaluate MSD
-@everywhere function get_emsd(traj::AbstractMatrix{<:NTuple{2}}, lags)
+@everywhere function get_emsd(traj::AbstractMatrix{<:SVector{2}}, lags)
     x = first.(traj)
     emx = emsd(x, lags)
     x = nothing
@@ -21,7 +22,7 @@ end
     [emx emy]
 end
 
-@everywhere function get_emsd(traj::AbstractMatrix{<:NTuple{3}}, lags)
+@everywhere function get_emsd(traj::AbstractMatrix{<:SVector{3}}, lags)
     x = first.(traj)
     emx = emsd(x, lags)
     x = nothing
@@ -52,7 +53,10 @@ end
     eMSD = get_emsd(traj, lags)
     traj = nothing
     GC.gc()
-    Δt = 0.05
+    #Δt = 20 * 0.005
+    Δt = 5 * 0.01
+    #λ = params["λ"]
+    #Δt = 20 / (200*λ)
     t = lags .* Δt
     writedlm(fout, [t eMSD])
     return nothing
