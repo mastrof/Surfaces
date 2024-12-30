@@ -12,18 +12,18 @@ end
 ## Routines for data production
 function runsim(params)
     @unpack dim, L, Ax, Ay, N, motilepattern, U, λ, Drot, interaction = params
-    Δt = 1 / (100*λ)
+    Δt = 1 / (200*λ)
     model = initializemodel_randomrectangles(
         dim, L, Ax, Ay, N,
         SurfyMicrobe, motilepattern,
         U, λ, Drot,
         U, λ, 0.0, # match with bulk parameters
         interaction == :stick ? stick! : slide!;
-        n = 100,
+        Δt
     )
     adata = [:pos]
     when(model,s) = s % 20 == 0
-    nsteps = round(Int, 500/(λ*model.timestep))
+    nsteps = round(Int, 2000/(λ*model.timestep))
     adf, = run!(model, nsteps; adata, when)
     @strdict adf
 end
@@ -42,10 +42,10 @@ end
 
 ## Setup parameters and run
 dim = [2]
-L = [25]
+L = [50]
 Ax = [0.05]
 Ay = [0.5]
-N = [823]
+N = [851]
 motilepattern = [:RunTumble, :RunReverse]
 interaction = [:stick]
 U = [1.0]

@@ -19,7 +19,7 @@ end
         U, λ, Drot,
         U, λ, 0.0, # match with bulk parameters
         interaction == :stick ? stick! : slide!;
-        rng = Xoshiro(1)
+        rng = Xoshiro(1), Δt
     )
     adata = [:pos]
     when(model,s) = s % 20 == 0
