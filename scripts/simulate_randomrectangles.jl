@@ -10,19 +10,20 @@ using Distributed
 end
 
 ## Routines for data production
-@everywhere function runsim(params)
+function runsim(params)
     @unpack dim, L, Ax, Ay, N, motilepattern, U, λ, Drot, interaction = params
-    Δt = 1 / (200*λ)
+    Δt = 1 / (100*λ)
     model = initializemodel_randomrectangles(
         dim, L, Ax, Ay, N,
         SurfyMicrobe, motilepattern,
         U, λ, Drot,
-        U, λ, 1.0, # match with bulk parameters
+        U, λ, 0.0, # match with bulk parameters
         interaction == :stick ? stick! : slide!;
+        n = 100,
     )
     adata = [:pos]
     when(model,s) = s % 20 == 0
-    nsteps = round(Int, 1000/(λ*model.timestep))
+    nsteps = round(Int, 500/(λ*model.timestep))
     adf, = run!(model, nsteps; adata, when)
     @strdict adf
 end
@@ -55,4 +56,3 @@ allparams = @strdict dim L Ax Ay N motilepattern interaction U λ Drot
 dicts = dict_list(allparams)
 
 pmap(produce_data, dicts)
-

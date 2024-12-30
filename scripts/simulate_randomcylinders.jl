@@ -17,7 +17,7 @@ end
         dim, L, pdf_R, φ,
         SurfyMicrobe, motilepattern,
         U, λ, Drot,
-        U, λ, 1.0, # match with bulk parameters
+        U, λ, 0.0, # match with bulk parameters
         interaction == :stick ? stick! : slide!;
         rng = Xoshiro(1)
     )
