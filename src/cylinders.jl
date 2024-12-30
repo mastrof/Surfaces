@@ -91,6 +91,15 @@ function stick!(microbe::SurfyMicrobe{D}, cylinder::Cylinder{D}, model) where {D
         walk!(microbe, ε.*s, model)
     end
     microbe.is_stuck = contact(microbe, cylinder, model)
+    # if escape prob > 0 microbe may escape immediately
+    if microbe.escape_probability > 0
+        if rand(abmrng(model)) < microbe.escape_probability
+            # try escape until a valid direction is found
+            while microbe.is_stuck
+                try_turn!(microbe, model)
+            end
+        end
+    end
     microbe
 end
 
