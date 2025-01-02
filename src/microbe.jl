@@ -13,11 +13,13 @@ function MicrobeAgents.microbe_step!(microbe::SurfyMicrobe, model)
         enumerate(bodies)
     end
     for (j, body) in nearby_bodies
+        was_stuck = microbe.is_stuck
         model.surface!(microbe, body, model)
         if microbe.is_stuck
             model.stuck_to[microbe.id] = j
-            # if escape prob > 0 microbe may escape immediately
-            if microbe.escape_probability > 0
+            # if microbe got stuck during last timestep
+            # and escape prob > 0, it may escape immediately
+            if !was_stuck && microbe.escape_probability > 0
                 if rand(abmrng(model)) < microbe.escape_probability
                     # try escape until valid direction is found
                     while microbe.is_stuck
