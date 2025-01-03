@@ -64,7 +64,8 @@ function try_unstick!(microbe::SurfyMicrobe, cylinder::Cylinder, model)
         microbe.is_stuck = false
         model.stuck_to[microbe.id] = 0
     else
-        model.slidingdirection[microbe.id] = slidedirection(microbe, cylinder, model)
+        # uncomment to allow turns on the surface during sliding
+        #model.slidingdirection[microbe.id] = slidedirection(microbe, cylinder, model)
     end
 end
 function try_unstick!(microbe::SurfyMicrobe{D}, slit::Slit, model) where {D}
