@@ -4,7 +4,7 @@ using JLD2, DelimitedFiles, CSV
 using LsqFit
 
 function free_volume!(df, type)
-    if type == "cylinders"
+    if type == "cylinders" || type == "cylindersesc"
         free_volume_cylinders!(df)
     elseif type == "randomcylinders"
         free_volume_randomcylinders!(df)
@@ -35,7 +35,7 @@ end
 
 
 function specific_surface!(df, type)
-    if type == "cylinders"
+    if type == "cylinders" || type == "cylindersesc"
         specific_surface_cylinders!(df)
     elseif type == "randomcylinders"
         specific_surface_randomcylinders!(df)
@@ -89,6 +89,8 @@ function optimal_parameters!(df, type)
     sort!(df, :λ)
     gdf = if type == "cylinders"
         groupby(df, [:interaction, :Drot, :motilepattern, :L, :R])
+    elseif type == "cylindersesc"
+        groupby(df, [:interaction, :Drot, :motilepattern, :L, :R, :μ])
     elseif type == "randomcylinders"
         groupby(df, [:interaction, :Drot, :motilepattern])
     elseif type == "rectangles"
@@ -101,17 +103,22 @@ function optimal_parameters!(df, type)
         # find index of max diffusivity
         Dmax, j = findmax(g.D)
         # fit parabola to neighborhood of maximum in log-lin scale
-        τs = @. log(1 / g.λ[j-2:j+2])
-        Ds = g.D[j-2:j+2]
-        p = curve_fit(model, τs, Ds, [τs[3], -1.0, Dmax]).param
-        τ_sim = p[1]
-        D_sim = model(τ_sim, p)
-        g.τ_sim .= exp(τ_sim)
-        g.D_sim .= D_sim
+        try
+            τs = @. log(1 / g.λ[j-2:j+2])
+            Ds = g.D[j-2:j+2]
+            p = curve_fit(model, τs, Ds, [τs[3], -1.0, Dmax]).param
+            τ_sim = p[1]
+            D_sim = model(τ_sim, p)
+            g.τ_sim .= exp(τ_sim)
+            g.D_sim .= D_sim
+        catch _
+            g.τ_sim .= NaN
+            g.D_sim .= NaN
+        end
     end
 end
 
-for type in ["cylinders", "rectangles", "randomrectangles"]
+for type in ["cylinders", "rectangles", "randomrectangles", "cylindersesc"]
     df = CSV.read(
         datadir("proc", type, "diffusioncoefficient.csv"),
         DataFrame
@@ -128,10 +135,19 @@ for type in ["cylinders", "rectangles", "randomrectangles"]
         [:φ, :S, :U, :σ] => ByRow((φ,S,U,σ) -> σ*φ/(U*S)) => :T
     )
     # scaling parameters
-    transform!(df,
-        :T => ByRow(T -> T / 2) => :a, # assumes 1/eta = 0.5
-        [:α, :Drot, :β, :T] => ByRow((α,Dr,β,T) -> (1-α)/(Dr+(1-β)/T)) => :b
-    )
+    if type == "cylindersesc"
+        eta = 2
+        transform!(df,
+            [:T, :μ] => ByRow((T,μ) -> T/(eta*(1-μ))) => :a,
+            [:α, :Drot, :β, :T] => ByRow((α,Dr,β,T) -> (1-α)/(Dr+(1-β)/T)) => :b
+        )
+    else
+        eta = 2
+        transform!(df,
+            :T => ByRow(T -> T/eta) => :a,
+            [:α, :Drot, :β, :T] => ByRow((α,Dr,β,T) -> (1-α)/(Dr+(1-β)/T)) => :b
+        )
+    end
     transform!(df,
         [:a, :b] => ByRow((a,b) -> (a+b) / sqrt(a*b)) => :c
     )
@@ -161,7 +177,11 @@ for type in ["cylinders", "rectangles", "randomrectangles"]
         :ξ => ByRow(ξ -> 4*ξ / (1+ξ)^2) => :modDiffR
     )
     # optimal run time and diffusivity maximum from simulations
-    optimal_parameters!(df, type)
+    optimal_parameters!(df, type) # τ_sim, D_sim
+    transform!(df,
+        [:λ, :τ_sim] => ByRow((λ,τ_sim) -> 1 / (τ_sim*λ)) => :ξ_sim,
+        [:c, :D, :D_sim] => ByRow((c,D,D_sim) -> 4 / (2-c+(2+c)*D_sim/D)) => :modDiffR_sim
+    )
     fout = datadir("proc", type, "scaling.csv")
     CSV.write(fout, df)
 end
