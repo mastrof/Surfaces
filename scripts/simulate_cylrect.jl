@@ -27,7 +27,7 @@ end
 @everywhere function produce_data(config)
     savedir = haskey(ENV, "SCRATCH") ? joinpath(ENV["SCRATCH"], "Surfaces") : datadir()
     data = produce_or_load(
-        runsim, joinpath(savedir, "sims", "cylinders"), config;
+        runsim, joinpath(savedir, "sims", "cylrect"), config;
         prefix="traj", suffix="jld2",
         tag=false, loadfile=false
     )
@@ -47,13 +47,4 @@ Drot = [0.1]
 
 allparams = @strdict dim L motilepattern interaction U λ Drot
 dicts = dict_list(allparams)
-#pmap(produce_data, dicts)
-config = dicts[4]
-adf = runsim(config)["adf"]
-traj = vectorize_adf_measurement(adf, :pos)
-utraj = MicrobeAgents.unfold(traj, L[1])
-plot(
-    first.(utraj).-0.5, last.(utraj).-0.5,
-    lab=false, ratio=1,
-    lims=(-2.5,2.5)
-)
+pmap(produce_data, dicts)
