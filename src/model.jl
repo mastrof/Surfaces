@@ -2,6 +2,7 @@ export initializemodel_cylinders,
     initializemodel_rectangles,
     initializemodel_randomcylinders,
     initializemodel_randomrectangles,
+    initializemodel_cylrect,
     initializemodel_slit
 
 function initializemodel_cylinders(
@@ -165,6 +166,64 @@ function initializemodel_randomrectangles(
     @info "Neighbor list initialized"
     # add neighbor list updater to model
     model → (model) -> update_neighbors!(model, cutoff_radius, abmproperties(model)[:t] % 50 == 0)
+
+    return model
+end
+
+function initializemodel_cylrect(
+    dim, L, #R, Ax, Ay,
+    MicrobeType, motilepattern,
+    U, λ, Drot,
+    Us, λs, μ,
+    interaction;
+    n = 2000, Δt = 0.01,
+    rng = Random.Xoshiro()
+)
+    extent = SVector{dim}(L for _ in 1:dim)
+    space = ContinuousSpace(extent, periodic=true)
+
+    p0 = extent ./ 2
+    bodies = [
+        # a large cylinder at the center
+        Cylinder(p0, L, 0.15*L),
+        # 4 rectangles diagonally around the center
+        Rectangle(p0 .+ SVector(L,L).*0.23, 0.1*L, 0.1*L),
+        Rectangle(p0 .+ SVector(-L,L).*0.23, 0.1*L, 0.1*L),
+        Rectangle(p0 .+ SVector(-L,-L).*0.23, 0.1*L, 0.1*L),
+        Rectangle(p0 .+ SVector(L,-L).*0.23, 0.1*L, 0.1*L),
+        # 4 smaller cylinders orthogonally around the center
+        Cylinder(p0 .+ SVector(0.37*L,0), L, 0.1*L),
+        Cylinder(p0 .+ SVector(0,0.37*L), L, 0.1*L),
+        Cylinder(p0 .+ SVector(-0.37*L,0), L, 0.1*L),
+        Cylinder(p0 .+ SVector(0,-0.37*L), L, 0.1*L),
+    ]
+    # solid fraction: φ̅ = 0.3563495408493621
+
+
+    model = UnremovableABM(MicrobeType{dim}, space, Δt; rng)
+    d0 = [b isa Rectangle ? 0.0 : b.radius for b in bodies]
+    for _ in 1:n
+        pos = Tuple(rand(rng, dim) .* extent)
+        while any([
+            distance(SVector(pos), b, model) <= d
+            for (b,d) in zip(bodies, d0)
+        ])
+            pos = Tuple(rand(rng, dim) .* extent)
+        end
+        add_agent!(pos, model;
+            rotational_diffusivity = Drot,
+            speed = U,
+            turn_rate = λ,
+            speed_surface = Us,
+            turn_rate_surface = λs,
+            escape_probability = μ,
+            is_stuck = false,
+            vel = random_velocity(abmrng(model), dim),
+            motility = init_motility(motilepattern, U)
+        )
+    end
+
+    surfaces!(model, bodies, interaction)
 
     return model
 end
