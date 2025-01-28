@@ -31,6 +31,34 @@ function sdf(pos::SVector{2,<:Real}, rect::Rectangle)
     return inside_distance + outside_distance
 end
 
+# HACK: Only works for orthogonally centered rectangles!
+# Don't use otherwise
+function slide!(microbe::SurfyMicrobe{2}, rectangle::Rectangle, model; ε=1e-3)
+    if ~microbe.is_stuck
+        stick!(microbe, rectangle, model)
+        # model.slidingdirection[microbe.id] = slidedirection(microbe, rectangle, model)
+        model.slidingdirection[microbe.id] = rand(abmrng(model), (-1,1))
+        return microbe
+    end
+    s = model.slidingdirection[microbe.id]
+    Δt = model.timestep
+    x, y = microbe.pos
+    rx, ry = rectangle.origin
+    Ax, Ay = rectangle.edge_x, rectangle.edge_y
+    if (x < (1+ε)*(rx-Ax) || x > (1-ε)*(rx+Ax)) && (ry-Ay < y < ry+Ay)
+        # stuck on left / right side, orient along y
+        microbe.vel = SVector(0, s)
+    else
+        # stuck on top / bottom side, orient along x
+        microbe.vel = SVector(s, 0)
+    end
+    Δt = model.timestep
+    # move_agent!(microbe, model, microbe.speed*Δt)
+    walk!(microbe, microbe.vel .* microbe.speed .* Δt, model)
+    microbe.is_stuck = sdf(microbe.pos, rectangle) <= 0
+    # return microbe # type stability
+end
+
 function stick!(microbe::SurfyMicrobe{2}, rectangle::Rectangle, model)
     pos = microbe.pos
     dist = sdf(pos, rectangle)
