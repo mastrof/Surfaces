@@ -54,9 +54,22 @@ function slide!(microbe::SurfyMicrobe{2}, rectangle::Rectangle, model; ε=1e-3)
     end
     Δt = model.timestep
     # move_agent!(microbe, model, microbe.speed*Δt)
-    walk!(microbe, microbe.vel .* microbe.speed .* Δt, model)
-    microbe.is_stuck = sdf(microbe.pos, rectangle) <= 0
-    # return microbe # type stability
+    # uncomment next two lines for sliding off
+    # walk!(microbe, microbe.vel .* microbe.speed .* Δt, model)
+    # microbe.is_stuck = sdf(microbe.pos, rectangle) <= 0
+    # uncomment next lines for back and forth motion
+    δ = microbe.vel .* microbe.speed .* Δt
+    new_pos = normalize_position(microbe.pos .+ δ, model)
+    r = (rx, ry)
+    a = (Ax, Ay)
+    new_pos_corr = SVector{2}(
+        clamp(new_pos[i], r[i]-a[i], r[i]+a[i]) for i in 1:2
+    )
+    if new_pos != new_pos_corr # if step was clamped, invert direction
+        microbe.vel = .- microbe.vel
+    end
+
+    return microbe # type stability
 end
 
 function stick!(microbe::SurfyMicrobe{2}, rectangle::Rectangle, model)
